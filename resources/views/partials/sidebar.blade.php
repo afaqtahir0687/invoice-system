@@ -1,8 +1,8 @@
 <aside class="sidebar" id="sidebar">
     <div class="brand">
-        <span class="fs-4">InvoiceSystem</span>
+        <img  src="{{ asset('assets/images/logo.png') }}" alt="InvoiceSystem Logo" class="img-fluid" style="max-height: 40px;">
     </div>
-    
+
     <nav class="sidebar-nav">
         <a href="{{ route('dashboard') }}" class="sidebar-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">
             <i class="fas fa-home"></i>
