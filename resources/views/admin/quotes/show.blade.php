@@ -135,6 +135,46 @@
             <p class="text-muted mb-0 small">{{ $quote->notes }}</p>
         </div>
         @endif
+
+        @if($quote->images && count($quote->images) > 0)
+        <div class="mt-5 pt-4 border-top">
+            <h6 class="fw-bold text-dark mb-3">Attached Images:</h6>
+            <div class="row g-3">
+                @foreach($quote->images as $index => $image)
+                <div class="col-md-3">
+                    <div class="position-relative overflow-hidden rounded-3 shadow-sm" style="cursor: pointer;" onclick="showImageModal('{{ asset($image) }}')">
+                        <img src="{{ asset($image) }}" class="img-fluid w-100" style="height: 200px; object-fit: cover; transition: transform 0.3s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                        <div class="position-absolute bottom-0 start-0 end-0 bg-dark bg-opacity-50 text-white p-2 text-center">
+                            <i class="fas fa-search-plus"></i> View
+                        </div>
+                    </div>
+                </div>
+                @endforeach
+            </div>
+        </div>
+        @endif
     </div>
 </x-card>
+
+<!-- Image Modal -->
+<div class="modal fade" id="imageModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content bg-transparent border-0">
+            <div class="modal-body p-0 position-relative">
+                <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3" data-bs-dismiss="modal" aria-label="Close" style="z-index: 10;"></button>
+                <img id="modalImage" src="" class="img-fluid w-100 rounded-3">
+            </div>
+        </div>
+    </div>
+</div>
+
+@section('scripts')
+<script>
+    function showImageModal(imageSrc) {
+        document.getElementById('modalImage').src = imageSrc;
+        const modal = new bootstrap.Modal(document.getElementById('imageModal'));
+        modal.show();
+    }
+</script>
+@endsection
 @endsection

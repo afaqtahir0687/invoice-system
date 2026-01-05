@@ -13,7 +13,7 @@
     </div>
 </div>
 
-<form action="{{ route('quotes.update', $quote) }}" method="POST" id="quote-form">
+<form action="{{ route('quotes.update', $quote) }}" method="POST" id="quote-form" enctype="multipart/form-data">
     @csrf
     @method('PUT')
     <input type="hidden" name="quote_number" value="{{ $quote->quote_number }}">
@@ -105,9 +105,43 @@
                     <textarea name="terms" class="form-control" rows="3">{{ $quote->terms }}</textarea>
                 </div>
                 
-                <div class="mb-0">
+                <div class="mb-3">
                     <label class="form-label text-muted fw-medium small">Notes</label>
                     <textarea name="notes" class="form-control" rows="3" placeholder="Additional notes for the customer...">{{ $quote->notes }}</textarea>
+                </div>
+
+                <div class="mb-0">
+                    <label class="form-label text-muted fw-medium small">Attach Images (Optional)</label>
+                    
+                    @if($quote->images && count($quote->images) > 0)
+                    <div class="mb-3">
+                        <p class="text-muted small">Current Images:</p>
+                        <div class="row g-2" id="existing-images">
+                            @foreach($quote->images as $index => $image)
+                            <div class="col-md-3" data-image-path="{{ $image }}">
+                                <div class="position-relative">
+                                    <img src="{{ asset($image) }}" class="img-thumbnail rounded-3" style="height: 150px; width: 100%; object-fit: cover;">
+                                    <button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0 m-2 rounded-circle" 
+                                            onclick="removeExistingImage('{{ $image }}')" style="width: 30px; height: 30px; padding: 0;">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            @endforeach
+                        </div>
+                    </div>
+                    @endif
+
+                    <div class="border-2 border-dashed rounded-3 p-4 text-center bg-light-subtle" id="drop-zone">
+                        <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-3"></i>
+                        <p class="text-muted mb-2">Drag & drop new images here or click to browse</p>
+                        <p class="text-muted small mb-3">Maximum 5 images, 2MB each (JPG, PNG, GIF)</p>
+                        <input type="file" name="images[]" id="image-input" class="d-none" multiple accept="image/jpeg,image/jpg,image/png,image/gif">
+                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="document.getElementById('image-input').click()">
+                            <i class="fas fa-folder-open me-2"></i>Browse Files
+                        </button>
+                    </div>
+                    <div id="image-preview" class="mt-3 row g-2"></div>
                 </div>
             </x-card>
         </div>
@@ -241,6 +275,105 @@
             calculate();
         }
     });
+
+    // Image Upload Functionality (same as create page)
+    const imageInput = document.getElementById('image-input');
+    const imagePreview = document.getElementById('image-preview');
+    const dropZone = document.getElementById('drop-zone');
+    let selectedFiles = [];
+    let removedImages = [];
+
+    imageInput.addEventListener('change', function(e) {
+        handleFiles(this.files);
+    });
+
+    dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.classList.add('border-primary', 'bg-primary-subtle');
+    });
+
+    dropZone.addEventListener('dragleave', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('border-primary', 'bg-primary-subtle');
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('border-primary', 'bg-primary-subtle');
+        handleFiles(e.dataTransfer.files);
+    });
+
+    function handleFiles(files) {
+        const maxFiles = 5;
+        const maxSize = 2 * 1024 * 1024;
+        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+
+        if (selectedFiles.length + files.length > maxFiles) {
+            alert(`You can only upload a maximum of ${maxFiles} images.`);
+            return;
+        }
+
+        Array.from(files).forEach(file => {
+            if (!allowedTypes.includes(file.type)) {
+                alert(`${file.name} is not a valid image type. Only JPG, PNG, and GIF are allowed.`);
+                return;
+            }
+
+            if (file.size > maxSize) {
+                alert(`${file.name} is too large. Maximum file size is 2MB.`);
+                return;
+            }
+
+            selectedFiles.push(file);
+            displayImagePreview(file);
+        });
+
+        updateFileInput();
+    }
+
+    function displayImagePreview(file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const col = document.createElement('div');
+            col.className = 'col-md-3';
+            col.innerHTML = `
+                <div class="position-relative">
+                    <img src="${e.target.result}" class="img-thumbnail rounded-3" style="height: 150px; width: 100%; object-fit: cover;">
+                    <button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0 m-2 rounded-circle" 
+                            onclick="removeImage('${file.name}')" style="width: 30px; height: 30px; padding: 0;">
+                        <i class="fas fa-times"></i>
+                    </button>
+                    <p class="text-muted small mt-2 mb-0 text-truncate">${file.name}</p>
+                </div>
+            `;
+            imagePreview.appendChild(col);
+        };
+        reader.readAsDataURL(file);
+    }
+
+    window.removeImage = function(fileName) {
+        selectedFiles = selectedFiles.filter(f => f.name !== fileName);
+        updateFileInput();
+        renderPreviews();
+    }
+
+    window.removeExistingImage = function(imagePath) {
+        const imageElement = document.querySelector(`[data-image-path="${imagePath}"]`);
+        if (imageElement) {
+            imageElement.remove();
+        }
+    }
+
+    function updateFileInput() {
+        const dataTransfer = new DataTransfer();
+        selectedFiles.forEach(file => dataTransfer.items.add(file));
+        imageInput.files = dataTransfer.files;
+    }
+
+    function renderPreviews() {
+        imagePreview.innerHTML = '';
+        selectedFiles.forEach(file => displayImagePreview(file));
+    }
 </script>
 @endsection
 @endsection

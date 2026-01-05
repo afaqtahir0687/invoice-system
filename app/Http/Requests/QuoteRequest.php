@@ -36,6 +36,8 @@ class QuoteRequest extends FormRequest
             'total_discount' => 'required|numeric',
             'shipping' => 'nullable|numeric|min:0',
             'grand_total' => 'required|numeric',
+            'images' => 'nullable|array|max:5',
+            'images.*' => 'image|mimes:jpeg,jpg,png,gif|max:2048',
         ];
     }
 }

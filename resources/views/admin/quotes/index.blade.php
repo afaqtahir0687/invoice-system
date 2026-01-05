@@ -18,6 +18,7 @@
             <th>Date</th>
             <th>Grand Total</th>
             <th>Status</th>
+            <th>Images</th>
             <th class="text-end">Action</th>
         </x-slot>
 
@@ -47,6 +48,33 @@
                 <span class="badge-soft {{ $statusClass }}">
                     {{ $quote->status }}
                 </span>
+            </td>
+            <td>
+                @if($quote->images && count($quote->images) > 0)
+                    <div class="d-flex align-items-center gap-1">
+                        @foreach($quote->images as $index => $image)
+                            @if($index < 3)
+                            <img src="{{ asset($image) }}" 
+                                 class="rounded-2 border" 
+                                 style="width: 40px; height: 40px; object-fit: cover; cursor: pointer;" 
+                                 data-bs-toggle="tooltip" 
+                                 title="Click to view quote"
+                                 onclick="window.location.href='{{ route('quotes.show', $quote) }}'">
+                            @endif
+                        @endforeach
+                        @if(count($quote->images) > 3)
+                            <span class="badge bg-secondary rounded-circle d-flex align-items-center justify-content-center" 
+                                  style="width: 40px; height: 40px; font-size: 0.75rem; cursor: pointer;"
+                                  onclick="window.location.href='{{ route('quotes.show', $quote) }}'">
+                                +{{ count($quote->images) - 3 }}
+                            </span>
+                        @endif
+                    </div>
+                @else
+                    <span class="text-muted small">
+                        <i class="fas fa-image me-1"></i>No images
+                    </span>
+                @endif
             </td>
             <td class="text-end">
                 <div class="dropdown">

@@ -7,7 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 class Quote extends Model
 {
     protected $fillable = [
-        'quote_number', 'quote_date', 'due_date', 'reference', 'customer_id', 'subtotal', 'total_tax', 'total_discount', 'shipping', 'grand_total', 'status', 'notes'
+        'quote_number', 'quote_date', 'due_date', 'reference', 'customer_id', 'subtotal', 'total_tax', 'total_discount', 'shipping', 'grand_total', 'status', 'notes', 'images'
+    ];
+
+    protected $casts = [
+        'images' => 'array',
     ];
 
     public function customer()

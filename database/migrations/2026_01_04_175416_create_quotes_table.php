@@ -25,6 +25,7 @@ return new class extends Migration
             $table->decimal('grand_total', 15, 2)->default(0);
             $table->enum('status', ['Draft', 'Sent', 'Accepted', 'Rejected', 'Invoiced'])->default('Draft');
             $table->text('notes')->nullable();
+            $table->json('images')->nullable();
             $table->timestamps();
         });
     }

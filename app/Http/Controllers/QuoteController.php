@@ -39,7 +39,20 @@ class QuoteController extends Controller
     public function store(QuoteRequest $request)
     {
         DB::transaction(function () use ($request) {
-            $quote = Quote::create($request->validated());
+            $data = $request->validated();
+            
+            // Handle image uploads
+            if ($request->hasFile('images')) {
+                $imagePaths = [];
+                foreach ($request->file('images') as $image) {
+                    $filename = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
+                    $image->move(public_path('uploads/quotes'), $filename);
+                    $imagePaths[] = 'uploads/quotes/' . $filename;
+                }
+                $data['images'] = $imagePaths;
+            }
+            
+            $quote = Quote::create($data);
             
             foreach ($request->items as $item) {
                 $quote->items()->create($item);
@@ -66,7 +79,30 @@ class QuoteController extends Controller
     public function update(QuoteRequest $request, Quote $quote)
     {
         DB::transaction(function () use ($request, $quote) {
-            $quote->update($request->validated());
+            $data = $request->validated();
+            
+            // Handle image uploads
+            if ($request->hasFile('images')) {
+                // Delete old images if new ones are uploaded
+                if ($quote->images) {
+                    foreach ($quote->images as $oldImage) {
+                        $oldImagePath = public_path($oldImage);
+                        if (file_exists($oldImagePath)) {
+                            unlink($oldImagePath);
+                        }
+                    }
+                }
+                
+                $imagePaths = [];
+                foreach ($request->file('images') as $image) {
+                    $filename = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
+                    $image->move(public_path('uploads/quotes'), $filename);
+                    $imagePaths[] = 'uploads/quotes/' . $filename;
+                }
+                $data['images'] = $imagePaths;
+            }
+            
+            $quote->update($data);
             $quote->items()->delete();
             
             foreach ($request->items as $item) {
