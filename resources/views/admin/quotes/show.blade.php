@@ -4,147 +4,137 @@
 
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h4>Quote Details: {{ $quote->quote_number }}</h4>
-    <div>
-        <a href="{{ route('quotes.pdf', $quote) }}" class="btn btn-outline-secondary me-2">
-            <i class="fas fa-file-pdf me-1"></i> Download PDF
+    <div class="d-flex align-items-center">
+        <a href="{{ route('quotes.index') }}" class="btn btn-light btn-sm rounded-circle me-3 shadow-sm">
+            <i class="fas fa-arrow-left text-muted"></i>
         </a>
-        <a href="{{ route('quotes.edit', $quote) }}" class="btn btn-outline-primary me-2">
-            <i class="fas fa-edit me-1"></i> Edit
-        </a>
+        <h2 class="fw-bold text-dark mb-0">Quote Detail</h2>
+        <span class="badge-soft badge-soft-primary ms-3">{{ $quote->quote_number }}</span>
+    </div>
+    <div class="d-flex gap-2">
         @if($quote->status != 'Invoiced')
-        <a href="{{ route('quotes.convert', $quote) }}" class="btn btn-success">
-            <i class="fas fa-exchange-alt me-1"></i> Convert to Invoice
+        <a href="{{ route('quotes.convert', $quote) }}" class="btn btn-primary-modern d-flex align-items-center shadow-sm" onclick="return confirm('Convert this quote to an Invoice?')">
+            <i class="fas fa-exchange-alt me-2"></i> Convert to Invoice
         </a>
         @endif
+        <a href="{{ route('quotes.pdf', $quote) }}" class="btn btn-outline-secondary border-2 d-flex align-items-center fw-medium">
+            <i class="fas fa-file-pdf me-2"></i> Download PDF
+        </a>
+        <a href="{{ route('quotes.edit', $quote) }}" class="btn btn-outline-info border-2 d-flex align-items-center fw-medium">
+            <i class="fas fa-edit me-2"></i> Edit
+        </a>
     </div>
 </div>
 
-<div class="card shadow-sm">
-    <div class="card-body p-5">
+<x-card :padding="false" class="overflow-hidden">
+    <div class="p-5">
         <div class="row mb-5">
             <div class="col-sm-6">
-                <h6 class="mb-3 text-muted">From:</h6>
+                <label class="text-uppercase text-muted fw-bold small mb-3 d-block">From</label>
                 @php $setting = \App\Models\Setting::first(); @endphp
-                <div>
-                    <strong>{{ $setting->company_name ?? 'My Company' }}</strong>
-                </div>
-                <div>{{ $setting->company_address ?? 'Address not set' }}</div>
-                <div>Email: {{ $setting->company_email ?? 'email@example.com' }}</div>
-                <div>Phone: {{ $setting->company_phone ?? '+00 000 0000' }}</div>
-                @if($setting->company_tax_id)
-                    <div>Tax ID: {{ $setting->company_tax_id }}</div>
-                @endif
+                <h5 class="fw-bold text-dark mb-1">{{ $setting->company_name ?? 'My Company' }}</h5>
+                <p class="text-muted mb-0">
+                    {{ $setting->company_address ?? 'Address not set' }}<br>
+                    <i class="fas fa-envelope me-1 small"></i> {{ $setting->company_email ?? 'email@example.com' }}<br>
+                    <i class="fas fa-phone me-1 small"></i> {{ $setting->company_phone ?? '+00 000 0000' }}
+                </p>
             </div>
-
             <div class="col-sm-6 text-sm-end">
-                <h6 class="mb-3 text-muted">To:</h6>
-                <div>
-                    <strong>{{ $quote->customer->name }}</strong>
-                </div>
-                @if($quote->customer->company_name)
-                    <div>{{ $quote->customer->company_name }}</div>
-                @endif
-                <div>{{ $quote->customer->address }}</div>
-                <div>{{ $quote->customer->city }}, {{ $quote->customer->zip }}</div>
-                <div>{{ $quote->customer->country }}</div>
-                <div>Email: {{ $quote->customer->email }}</div>
+                <label class="text-uppercase text-muted fw-bold small mb-3 d-block">Prepared For</label>
+                <h5 class="fw-bold text-dark mb-1">{{ $quote->customer->name }}</h5>
+                <p class="text-muted mb-0">
+                    {{ $quote->customer->address }}<br>
+                    {{ $quote->customer->city }}, {{ $quote->customer->zip }}, {{ $quote->customer->country }}<br>
+                    <i class="fas fa-envelope me-1 small"></i> {{ $quote->customer->email }}
+                </p>
             </div>
         </div>
 
-        <div class="row mb-4">
-            <div class="col-sm-4">
-                <div class="text-muted mb-1">Quote Date</div>
-                <div class="fw-bold">{{ $quote->quote_date }}</div>
+        <div class="row mb-5 py-3 border-top border-bottom bg-light-subtle">
+            <div class="col-3">
+                <span class="text-muted small d-block">Quote Date</span>
+                <span class="fw-bold text-dark">{{ $quote->quote_date }}</span>
             </div>
-            <div class="col-sm-4">
-                <div class="text-muted mb-1">Due Date</div>
-                <div class="fw-bold">{{ $quote->due_date ?? 'N/A' }}</div>
+            <div class="col-3">
+                <span class="text-muted small d-block">Due Date</span>
+                <span class="fw-bold text-dark">{{ $quote->due_date ?? 'N/A' }}</span>
             </div>
-            <div class="col-sm-4 text-sm-end">
-                <div class="text-muted mb-1">Reference</div>
-                <div class="fw-bold">{{ $quote->reference ?? 'N/A' }}</div>
+            <div class="col-3">
+                <span class="text-muted small d-block">Status</span>
+                @php
+                    $statusClass = match($quote->status) {
+                        'Accepted' => 'badge-soft-success',
+                        'Sent' => 'badge-soft-info',
+                        'Invoiced' => 'badge-soft-primary',
+                        'Declined' => 'badge-soft-danger',
+                        default => 'badge-soft-warning'
+                    };
+                @endphp
+                <span class="badge-soft {{ $statusClass }}">{{ $quote->status }}</span>
+            </div>
+            <div class="col-3 text-end">
+                <span class="text-muted small d-block">Reference</span>
+                <span class="fw-bold text-primary">{{ $quote->reference ?? 'N/A' }}</span>
             </div>
         </div>
 
-        <div class="table-responsive-sm">
-            <table class="table table-striped">
-                <thead class="bg-light">
-                    <tr>
-                        <th class="center">#</th>
-                        <th>Item</th>
-                        <th class="right">Unit Cost</th>
-                        <th class="center">Qty</th>
-                        <th class="right">Tax %</th>
-                        <th class="right">Discount</th>
-                        <th class="right">Total</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($quote->items as $index => $item)
-                    <tr>
-                        <td class="center">{{ $index + 1 }}</td>
-                        <td class="left fw-bold">{{ $item->description }}</td>
-                        <td class="right">{{ format_currency($item->unit_price) }}</td>
-                        <td class="center">{{ $item->quantity }}</td>
-                        <td class="right">{{ $item->tax_percentage }}%</td>
-                        <td class="right">{{ format_currency($item->discount) }}</td>
-                        <td class="right fw-bold">{{ format_currency($item->total) }}</td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
+        <x-table class="mb-5">
+            <x-slot name="thead">
+                <th style="width: 5%" class="ps-0">#</th>
+                <th style="width: 45%">Description</th>
+                <th style="width: 15%" class="text-end">Unit Price</th>
+                <th style="width: 10%" class="text-center">Qty</th>
+                <th style="width: 10%" class="text-center">Tax %</th>
+                <th style="width: 15%" class="text-end pe-0">Total</th>
+            </x-slot>
+
+            @foreach($quote->items as $index => $item)
+            <tr class="align-middle">
+                <td class="ps-0 text-muted">{{ $index + 1 }}</td>
+                <td class="fw-medium text-dark">{{ $item->description }}</td>
+                <td class="text-end text-muted">{{ format_currency($item->unit_price) }}</td>
+                <td class="text-center">{{ $item->quantity }}</td>
+                <td class="text-center">{{ $item->tax_percentage }}%</td>
+                <td class="text-end pe-0 fw-bold text-dark">{{ format_currency($item->total) }}</td>
+            </tr>
+            @endforeach
+        </x-table>
 
         <div class="row justify-content-end">
-            <div class="col-lg-4 col-sm-5 ms-auto">
-                <table class="table table-clear">
-                    <tbody>
-                        <tr>
-                            <td class="left">
-                                <strong class="text-dark">Subtotal</strong>
-                            </td>
-                            <td class="right text-end">{{ format_currency($quote->subtotal) }}</td>
-                        </tr>
-                        <tr>
-                            <td class="left">
-                                <strong class="text-dark">Total Tax</strong>
-                            </td>
-                            <td class="right text-end">{{ format_currency($quote->total_tax) }}</td>
-                        </tr>
-                        <tr>
-                            <td class="left">
-                                <strong class="text-dark">Total Discount</strong>
-                            </td>
-                            <td class="right text-end">-{{ format_currency($quote->total_discount) }}</td>
-                        </tr>
-                        @if($quote->shipping > 0)
-                        <tr>
-                            <td class="left">
-                                <strong class="text-dark">Shipping</strong>
-                            </td>
-                            <td class="right text-end">{{ format_currency($quote->shipping) }}</td>
-                        </tr>
-                        @endif
-                        <tr class="table-light">
-                            <td class="left">
-                                <strong class="text-dark">Grand Total</strong>
-                            </td>
-                            <td class="right text-end">
-                                <strong class="text-dark fs-5">{{ format_currency($quote->grand_total) }}</strong>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+            <div class="col-md-5">
+                <div class="d-flex flex-column gap-3 p-4 bg-light rounded-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="text-muted">Subtotal</span>
+                        <span class="fw-medium text-dark">{{ format_currency($quote->subtotal) }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="text-muted">Total Tax</span>
+                        <span class="fw-medium text-dark">{{ format_currency($quote->total_tax) }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="text-muted">Total Discount</span>
+                        <span class="fw-medium text-danger">-{{ format_currency($quote->total_discount) }}</span>
+                    </div>
+                    @if($quote->shipping > 0)
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="text-muted">Shipping</span>
+                        <span class="fw-medium text-dark">{{ format_currency($quote->shipping) }}</span>
+                    </div>
+                    @endif
+                    <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+                        <span class="fw-bold text-dark fs-5">Grand Total</span>
+                        <span class="fw-bold text-primary fs-5">{{ format_currency($quote->grand_total) }}</span>
+                    </div>
+                </div>
             </div>
         </div>
 
         @if($quote->notes)
         <div class="mt-5 pt-4 border-top">
-            <h6 class="text-muted mb-2">Notes:</h6>
-            <div class="text-secondary">{{ $quote->notes }}</div>
+            <h6 class="fw-bold text-dark mb-2">Notes:</h6>
+            <p class="text-muted mb-0 small">{{ $quote->notes }}</p>
         </div>
         @endif
     </div>
-</div>
+</x-card>
 @endsection

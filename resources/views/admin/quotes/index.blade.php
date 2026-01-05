@@ -1,55 +1,77 @@
 @extends('admin.layouts.app')
 
-@section('title', 'Quotes')
+@section('title', 'Manage Quotes')
 
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h4>Quotes</h4>
-    <a href="{{ route('quotes.create') }}" class="btn btn-primary">Create New Quote</a>
+    <h2 class="fw-bold text-dark mb-0">Quotes</h2>
+    <a href="{{ route('quotes.create') }}" class="btn btn-primary-modern d-flex align-items-center">
+        <i class="fas fa-plus me-2"></i> Create New Quote
+    </a>
 </div>
 
-<div class="card">
-    <div class="card-body p-0">
-        <table class="table table-hover mb-0">
-            <thead class="table-light">
-                <tr>
-                    <th>Quote #</th>
-                    <th>Customer</th>
-                    <th>Date</th>
-                    <th>Grand Total</th>
-                    <th>Status</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($quotes as $quote)
-                <tr>
-                    <td>{{ $quote->quote_number }}</td>
-                    <td>{{ $quote->customer->name }}</td>
-                    <td>{{ $quote->quote_date }}</td>
-                    <td>{{ format_currency($quote->grand_total) }}</td>
-                    <td>
-                        <span class="badge {{ $quote->status == 'Sent' ? 'bg-info' : ($quote->status == 'Accepted' ? 'bg-success' : ($quote->status == 'Invoiced' ? 'bg-primary' : 'bg-secondary')) }}">
-                            {{ $quote->status }}
-                        </span>
-                    </td>
-                    <td>
-                        <div class="btn-group">
-                            <a href="{{ route('quotes.show', $quote) }}" class="btn btn-sm btn-outline-primary">View</a>
-                            <a href="{{ route('quotes.edit', $quote) }}" class="btn btn-sm btn-outline-info">Edit</a>
-                            <a href="{{ route('quotes.pdf', $quote) }}" class="btn btn-sm btn-outline-secondary">PDF</a>
-                            @if($quote->status != 'Invoiced')
-                            <a href="{{ route('quotes.convert', $quote) }}" class="btn btn-sm btn-outline-success" onclick="return confirm('Convert this quote to an Invoice?')">Convert</a>
-                            @endif
-                        </div>
-                    </td>
-                </tr>
-                @endforeach
-            </tbody>
-        </table>
-    </div>
-    <div class="card-footer bg-white">
-        {{ $quotes->links() }}
-    </div>
-</div>
+<x-card :padding="false">
+    <x-table>
+        <x-slot name="thead">
+            <th>Quote #</th>
+            <th>Customer</th>
+            <th>Date</th>
+            <th>Grand Total</th>
+            <th>Status</th>
+            <th class="text-end">Action</th>
+        </x-slot>
+
+        @foreach($quotes as $quote)
+        <tr>
+            <td class="fw-bold text-primary">{{ $quote->quote_number }}</td>
+            <td>
+                <div class="d-flex align-items-center">
+                    <div class="avatar-sm me-2 bg-light text-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; font-size: 0.8rem;">
+                        {{ strtoupper(substr($quote->customer->name, 0, 1)) }}
+                    </div>
+                    {{ $quote->customer->name }}
+                </div>
+            </td>
+            <td class="text-muted">{{ $quote->quote_date }}</td>
+            <td class="fw-semibold text-dark">{{ format_currency($quote->grand_total) }}</td>
+            <td>
+                @php
+                    $statusClass = match($quote->status) {
+                        'Accepted' => 'badge-soft-success',
+                        'Sent' => 'badge-soft-info',
+                        'Invoiced' => 'badge-soft-primary',
+                        'Declined' => 'badge-soft-danger',
+                        default => 'badge-soft-warning'
+                    };
+                @endphp
+                <span class="badge-soft {{ $statusClass }}">
+                    {{ $quote->status }}
+                </span>
+            </td>
+            <td class="text-end">
+                <div class="dropdown">
+                    <button class="btn btn-light btn-sm rounded-circle shadow-none" type="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-ellipsis-v text-muted"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
+                        <li><a class="dropdown-item py-2" href="{{ route('quotes.show', $quote) }}"><i class="fas fa-eye me-2 text-primary"></i> View Detail</a></li>
+                        <li><a class="dropdown-item py-2" href="{{ route('quotes.edit', $quote) }}"><i class="fas fa-edit me-2 text-info"></i> Edit</a></li>
+                        <li><a class="dropdown-item py-2" href="{{ route('quotes.pdf', $quote) }}"><i class="fas fa-file-pdf me-2 text-danger"></i> Download PDF</a></li>
+                        @if($quote->status != 'Invoiced')
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item py-2 text-success" href="{{ route('quotes.convert', $quote) }}" onclick="return confirm('Convert this quote to an Invoice?')"><i class="fas fa-exchange-alt me-2"></i> Convert to Invoice</a></li>
+                        @endif
+                    </ul>
+                </div>
+            </td>
+        </tr>
+        @endforeach
+    </x-table>
+    
+    @if($quotes->hasPages())
+        <div class="card-footer bg-transparent border-top p-4">
+            {{ $quotes->links() }}
+        </div>
+    @endif
+</x-card>
 @endsection

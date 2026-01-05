@@ -1,122 +1,131 @@
 @extends('admin.layouts.app')
 
-@section('title', 'Dashboard')
+@section('title', 'Admin Dashboard')
 
 @section('content')
-<div class="row mb-4">
-    <div class="col-md-3">
-        <div class="card bg-primary text-white shadow-sm border-0">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <h6 class="text-uppercase mb-1 opacity-75">Total Customers</h6>
-                        <h3 class="mb-0">{{ $stats['customers_count'] }}</h3>
-                    </div>
-                    <i class="fas fa-users fa-2x opacity-50"></i>
-                </div>
+<div class="row g-4 mb-4">
+    <!-- KPI Cards -->
+    <div class="col-xl-3 col-md-6">
+        <div class="card-modern kpi-card bg-gradient-indigo">
+            <div class="icon-box">
+                <i class="fas fa-users fa-lg"></i>
             </div>
+            <h6 class="text-white-50 text-uppercase mb-2 fw-semibold">Total Customers</h6>
+            <h2 class="mb-0 fw-bold">{{ $stats['customers_count'] }}</h2>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card bg-success text-white shadow-sm border-0">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <h6 class="text-uppercase mb-1 opacity-75">Total Invoices</h6>
-                        <h3 class="mb-0">{{ $stats['invoices_count'] }}</h3>
-                    </div>
-                    <i class="fas fa-file-invoice-dollar fa-2x opacity-50"></i>
-                </div>
+    
+    <div class="col-xl-3 col-md-6">
+        <div class="card-modern kpi-card bg-gradient-emerald">
+            <div class="icon-box">
+                <i class="fas fa-file-invoice-dollar fa-lg"></i>
             </div>
+            <h6 class="text-white-50 text-uppercase mb-2 fw-semibold">Total Invoices</h6>
+            <h2 class="mb-0 fw-bold">{{ $stats['invoices_count'] }}</h2>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card bg-info text-white shadow-sm border-0">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <h6 class="text-uppercase mb-1 opacity-75">Paid Amount</h6>
-                        <h3 class="mb-0">{{ format_currency($stats['total_paid']) }}</h3>
-                    </div>
-                    <i class="fas fa-check-circle fa-2x opacity-50"></i>
-                </div>
+
+    <div class="col-xl-3 col-md-6">
+        <div class="card-modern kpi-card bg-gradient-amber">
+            <div class="icon-box">
+                <i class="fas fa-check-circle fa-lg"></i>
             </div>
+            <h6 class="text-white-50 text-uppercase mb-2 fw-semibold">Paid Amount</h6>
+            <h2 class="mb-0 fw-bold">{{ format_currency($stats['total_paid']) }}</h2>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card bg-danger text-white shadow-sm border-0">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <h6 class="text-uppercase mb-1 opacity-75">Pending Amount</h6>
-                        <h3 class="mb-0">{{ format_currency($stats['total_pending']) }}</h3>
-                    </div>
-                    <i class="fas fa-clock fa-2x opacity-50"></i>
-                </div>
+
+    <div class="col-xl-3 col-md-6">
+        <div class="card-modern kpi-card bg-gradient-rose">
+            <div class="icon-box">
+                <i class="fas fa-clock fa-lg"></i>
             </div>
+            <h6 class="text-white-50 text-uppercase mb-2 fw-semibold">Pending Amount</h6>
+            <h2 class="mb-0 fw-bold">{{ format_currency($stats['total_pending']) }}</h2>
         </div>
     </div>
 </div>
 
-<div class="row">
-    <div class="col-md-8">
-        <div class="card shadow-sm">
-            <div class="card-header bg-white">
-                <h5 class="mb-0">Recent Invoices</h5>
-            </div>
-            <div class="card-body p-0">
-                <table class="table table-hover mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Invoice #</th>
-                            <th>Customer</th>
-                            <th>Total</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($recentInvoices as $invoice)
-                        <tr>
-                            <td>{{ $invoice->invoice_number }}</td>
-                            <td>{{ $invoice->customer->name }}</td>
-                            <td>{{ format_currency($invoice->grand_total) }}</td>
-                            <td>
-                                <span class="badge {{ $invoice->status == 'Paid' ? 'bg-success' : 'bg-warning' }}">
-                                    {{ $invoice->status }}
-                                </span>
-                            </td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-            <div class="card-footer bg-white text-center">
-                <a href="{{ route('invoices.index') }}" class="btn btn-sm btn-link text-decoration-none">View All Invoices</a>
-            </div>
-        </div>
+<div class="row g-4">
+    <div class="col-lg-8">
+        <x-card title="Recent Invoices" :padding="false">
+            <x-slot name="headerActions">
+                <a href="{{ route('invoices.index') }}" class="btn btn-sm btn-link text-decoration-none fw-medium">View All</a>
+            </x-slot>
+
+            <x-table>
+                <x-slot name="thead">
+                    <th>Invoice #</th>
+                    <th>Customer</th>
+                    <th>Total</th>
+                    <th>Status</th>
+                    <th class="text-end">Action</th>
+                </x-slot>
+
+                @foreach($recentInvoices as $invoice)
+                <tr>
+                    <td class="fw-medium text-dark">{{ $invoice->invoice_number }}</td>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <div class="avatar-sm me-2 bg-light text-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 28px; height: 28px; font-size: 0.75rem;">
+                                {{ strtoupper(substr($invoice->customer->name, 0, 1)) }}
+                            </div>
+                            {{ $invoice->customer->name }}
+                        </div>
+                    </td>
+                    <td class="fw-semibold text-dark">{{ format_currency($invoice->grand_total) }}</td>
+                    <td>
+                        <span class="badge-soft {{ $invoice->status == 'Paid' ? 'badge-soft-success' : 'badge-soft-warning' }}">
+                            {{ $invoice->status }}
+                        </span>
+                    </td>
+                    <td class="text-end">
+                        <a href="{{ route('invoices.show', $invoice->id) }}" class="btn btn-sm btn-light rounded-circle shadow-none">
+                            <i class="fas fa-eye text-muted"></i>
+                        </a>
+                    </td>
+                </tr>
+                @endforeach
+            </x-table>
+        </x-card>
     </div>
-    <div class="col-md-4">
-        <div class="card shadow-sm">
-            <div class="card-header bg-white">
-                <h5 class="mb-0">Quick Actions</h5>
+
+    <div class="col-lg-4">
+        <x-card title="Quick Actions">
+            <div class="d-grid gap-3">
+                <a href="{{ route('quotes.create') }}" class="btn btn-primary-modern text-start d-flex align-items-center">
+                    <i class="fas fa-file-invoice me-3"></i> 
+                    <div>
+                        <span class="d-block fw-bold">Create New Quote</span>
+                        <small class="text-white-50 fw-normal">Generate a professional quote</small>
+                    </div>
+                </a>
+                
+                <a href="{{ route('invoices.create') }}" class="btn btn-outline-primary border-2 text-start d-flex align-items-center py-3 rounded-3 group">
+                    <i class="fas fa-file-invoice-dollar me-3 fa-lg opacity-75"></i>
+                    <div>
+                        <span class="d-block fw-bold text-dark">Create New Invoice</span>
+                        <small class="text-muted fw-normal">Bill your customers easily</small>
+                    </div>
+                </a>
+
+                <a href="{{ route('customers.create') }}" class="btn btn-outline-info border-2 text-start d-flex align-items-center py-3 rounded-3">
+                    <i class="fas fa-user-plus me-3 fa-lg opacity-75"></i>
+                    <div>
+                        <span class="d-block fw-bold text-dark">Add New Customer</span>
+                        <small class="text-muted fw-normal">Expand your client base</small>
+                    </div>
+                </a>
+
+                <a href="{{ route('settings.index') }}" class="btn btn-outline-secondary border-2 text-start d-flex align-items-center py-3 rounded-3">
+                    <i class="fas fa-cog me-3 fa-lg opacity-75"></i>
+                    <div>
+                        <span class="d-block fw-bold text-dark">System Settings</span>
+                        <small class="text-muted fw-normal">Configure your system</small>
+                    </div>
+                </a>
             </div>
-            <div class="card-body">
-                <div class="d-grid gap-2">
-                    <a href="{{ route('quotes.create') }}" class="btn btn-outline-primary text-start">
-                        <i class="fas fa-file-invoice me-2"></i> Create New Quote
-                    </a>
-                    <a href="{{ route('invoices.create') }}" class="btn btn-outline-success text-start">
-                        <i class="fas fa-file-invoice-dollar me-2"></i> Create New Invoice
-                    </a>
-                    <a href="{{ route('customers.create') }}" class="btn btn-outline-info text-start">
-                        <i class="fas fa-user-plus me-2"></i> Add New Customer
-                    </a>
-                    <a href="{{ route('settings.index') }}" class="btn btn-outline-secondary text-start">
-                        <i class="fas fa-cog me-2"></i> System Settings
-                    </a>
-                </div>
-            </div>
-        </div>
+        </x-card>
     </div>
 </div>
 @endsection
